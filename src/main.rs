@@ -13,9 +13,14 @@ mod logger;
 #[tokio::main]
 async fn main() -> Result<()>{
     let mut lattice = db::init_db("lattice")?;
-    let rd = lattice.read_transaction().unwrap();
-    let mut tables = rd.tables();
-
+    /* db op example
+    db::insert(&lattice, db::Agents{
+        symbol: "TEST".to_string(),
+        token: "AUTH_TOKEN".to_string()
+    });
+    let agent: db::Agents = db::read(&lattice, "TEST".to_string());
+    println!("{:#?}", agent);
+    */
     println!(">> {} <<", "BOOTING NEUROMORPHIC CORE".white());
     println!("> Instantiating SERAPH translation angel...");
     println!("!> {}", "ARCHANGEL.RAZIEL is ONLINE. Greetings, user. I will now run some post-boot protocols.".yellow());

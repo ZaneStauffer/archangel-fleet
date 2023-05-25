@@ -16,8 +16,8 @@ pub mod db{
         // ... other fn_secondary_key ...
     )]
     pub struct Agents{
-        symbol: String,
-        token: String
+        pub symbol: String,
+        pub token: String
     }
 
     impl Agents{
@@ -33,10 +33,23 @@ pub mod db{
         Ok(())
     }
 
-    pub fn insert<T>(db: &Db, datum: T) -> std::result::Result<(), Box<dyn std::error::Error>>{
-        let txn = db.transaction()?;
-
+    pub fn insert<T: SDBItem>(db: &Db, datum: T) -> std::result::Result<(), Box<dyn std::error::Error>>{
+        let mut txn = db.transaction()?;
+        {
+            let mut tables = txn.tables();
+            tables.insert(&txn, datum)?;
+        } 
+        txn.commit()?;
         Ok(())
+    }
+
+    // Searches the database with primary key
+    pub fn read<T: SDBItem>(db: &Db, p_key: String) -> T{
+        let mut txn = db.read_transaction().unwrap();
+        let mut tables = txn.tables();
+        let data: T = tables.primary_get(&txn, p_key.as_bytes()).unwrap().unwrap();
+        
+        data
     }
 
     pub fn init_db(name: &str) -> Result<Db>{
