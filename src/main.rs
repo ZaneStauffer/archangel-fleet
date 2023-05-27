@@ -5,10 +5,13 @@ use spacedust::models::register_request::{Faction, RegisterRequest};
 use struct_db::*;
 use colored::*;
 
+use entities::schemas;
 use database::db;
+
 mod generators;
 mod database;
 mod logger;
+mod entities;
 
 #[tokio::main]
 async fn main() -> Result<()>{
@@ -33,7 +36,13 @@ async fn main() -> Result<()>{
     // register request
     let id: String = generators::generate_hex_ID();
     let user_agent = format!("VIRTUE-{}", id); // agent name with ARCHANGEL + id
-    // let register_request = RegisterRequest::new(Faction::Quantum, user_agent.clone());
+    
+    let agent = schemas::Agents{
+        symbol: user_agent.clone(),
+        token: "idk".to_string()
+    };
+    let res = agent.register(&mut config, Faction::Quantum, user_agent.clone(), &lattice).await;
+    println!("{:#?}", res);
 
     logger::log(&format!("{} has been instantiated. Storing agent signature in LATTICE.", user_agent),
         logger::AlertType::ALERT,

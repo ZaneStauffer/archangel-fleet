@@ -8,23 +8,7 @@ pub mod db{
     use std::fmt;
     use std::result;
     use struct_db::*;
-
-    #[derive(Serialize, Deserialize, PartialEq, Debug)]
-    #[struct_db(
-        fn_primary_key(p_key),  // required
-        //fn_secondary_key(s_key),  // optional
-        // ... other fn_secondary_key ...
-    )]
-    pub struct Agents{
-        pub symbol: String,
-        pub token: String
-    }
-
-    impl Agents{
-        pub fn p_key(&self) -> Vec<u8>{
-            self.symbol.as_bytes().to_vec()
-        }
-    }
+    use crate::schemas::Agents;
 
     // Update the database
     pub fn update<T>(db: &Db, datum: T) -> std::result::Result<(), Box<dyn std::error::Error>>{
