@@ -8,7 +8,7 @@ pub mod db{
     use std::fmt;
     use std::result;
     use struct_db::*;
-    use crate::schemas::Agents;
+    use crate::entities::{agent::*, ship::*};
 
     // Update the database
     pub fn update<T>(db: &Db, datum: T) -> std::result::Result<(), Box<dyn std::error::Error>>{

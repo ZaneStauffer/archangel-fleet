@@ -2,43 +2,75 @@
 // The rate limiter is used to limit the number of requests per second to the SpaceTraders API.
 // Compare this snippet from src\entities\schemas.rs:
 
-#[derive(Debug, Serialize, Deserialize)]
-// "This is a bucket."
-// "Dear god..."
-// "There's more."
-// "No..."
+use spacedust::apis::configuration::Configuration;
+use spacedust::apis::*;
+use spacedust::models::*;
+use leaky_bucket_lite::LeakyBucket;
+use std::time::Duration;
+use std::future::Future;
+use futures::executor::block_on;
+
+// singleton rate limiter for whole program to send requests through (initialized in main)
 pub struct RateLimiter{
-    pub max_tokens: u32,
-    pub tokens: u32,
-    pub last_update: u128,
-    pub update_interval: u128
+    pub bucket: LeakyBucket
 }
+
 impl RateLimiter{
-    pub fn new(max_tokens: u32, update_interval: u128) -> RateLimiter{
-        RateLimiter{
-            max_tokens: max_tokens,
-            tokens: max_tokens,
-            last_update: 0,
-            update_interval: update_interval
-        }
+    /* 
+    * Creates a new bucket
+    * @param max: u32 - The maximum number of tokens the bucket can hold
+    * @param interval_sec: u32 - The interval in seconds at which the bucket refills
+    * @param amount: u32 - The amount of tokens the bucket refills at each interval
+    * @return LeakyBucket - The rate limiter
+
+    For our rate limiter we want:
+        * 3 requests per second.
+    
+        max: 3
+        interval_sec: 1
+        amount: 3
+    */
+    pub fn new_bucket(max: u32, interval_sec: u64, amount: u32) -> LeakyBucket{
+        LeakyBucket::builder()
+            .max(max)
+            .tokens(max)
+            .refill_interval(Duration::from_secs(interval_sec))
+            .refill_amount(amount)
+            .build()
     }
-    pub fn update(&mut self, current_time: u128){
-        let time_passed = current_time - self.last_update;
-        let tokens_to_add = time_passed / self.update_interval;
-        self.tokens = self.tokens + tokens_to_add as u32;
-        if self.tokens > self.max_tokens{
-            self.tokens = self.max_tokens;
-        }
-        self.last_update = current_time;
-    }
-    pub fn consume(&mut self, tokens: u32) -> bool{
-        if self.tokens >= tokens{
-            self.tokens = self.tokens - tokens;
-            true
-        }else{
-            false
-        }
+}
+/* 
+    * Initializes the rate limiter
+    * @param config: &Configuration - The API configuration
+    * @return LeakyBucket - The rate limiter
+*/
+// called in main to initialize rate limiter for whole program to send requests through
+pub fn init_rate_limiter(config: &Configuration) -> RateLimiter{
+    let mut bucket = RateLimiter::new_bucket(5, 1, 3);
+    RateLimiter{
+        bucket: bucket
     }
 }
 
 
+
+/*
+bucket.acquire_one().await; // wait for a token to be available. Blocks the next block from running until a token is available.
+{
+// This block is ran once the token is available
+// We can make the request logic here in entities module
+}
+*/
+
+/* 
+    * Adds a request to the rate limiter
+*/
+// pub fn add_request(config: &Configuration, bucket: &mut LeakyBucket) -> Result<(), Box<dyn std::error::Error>>{
+//     // Wait for a token to be available
+//     bucket.acquire_one();
+//     // Make the request
+//     // TODO: generic request typing
+//     //let response = get_my_user(&config);
+//     // Return the result
+//     unimplemented!("add_request() not implemented")
+// }

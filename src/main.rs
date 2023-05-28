@@ -6,24 +6,20 @@ use struct_db::*;
 use colored::*;
 
 use entities::schemas;
+// import all entity schema
+use entities::{agent::*, ship::*};
 use database::db;
 
 mod generators;
 mod database;
 mod logger;
 mod entities;
+mod rate;
 
 #[tokio::main]
 async fn main() -> Result<()>{
     let mut lattice = db::init_db("lattice")?;
-    /* db op example
-    db::insert(&lattice, db::Agents{
-        symbol: "TEST".to_string(),
-        token: "AUTH_TOKEN".to_string()
-    });
-    let agent: db::Agents = db::read(&lattice, "TEST".to_string());
-    println!("{:#?}", agent);
-    */
+    
     println!(">> {} <<", "BOOTING NEUROMORPHIC CORE".white());
     println!("> Instantiating SERAPH translation angel...");
     println!("!> {}", "ARCHANGEL.RAZIEL is ONLINE. Greetings, user. I will now run some post-boot protocols.".yellow());
@@ -33,27 +29,32 @@ async fn main() -> Result<()>{
 
     // create config
     let mut config = Configuration::new();
-    // register request
+
+    // create rate limiter
+    let mut limiter = rate::init_rate_limiter(&config);
+    println!("{:#?} tokens in the bucket (:", limiter.bucket.tokens());
+
+    // register request [testing]
     let id: String = generators::generate_hex_ID();
+    // generate agent ID [testing]
     let user_agent = format!("VIRTUE-{}", id); // agent name with ARCHANGEL + id
     
-    let agent = schemas::Agents{
+    let agent = Agents{
         symbol: user_agent.clone(),
         token: "idk".to_string()
     };
 
     // get bearer token
-    let token = db::read::<schemas::Agents>(&lattice, "VIRTUE-C8DB26".to_string()).token;
-    println!("{:#?}", token);
+    let token = db::read::<Agents>(&lattice, "VIRTUE-C8DB26".to_string()).token;
     config.bearer_access_token = Some(token.clone());
     // Create search object
-    let search = schemas::Agents::new("VIRTUE-C8DB26".to_string(), "".to_string());
+    let search = Agents::new("VIRTUE-C8DB26".to_string(), "".to_string());
     // get data
-    let results = search.get_data(&mut config).await.unwrap();
+    let results = search.get_data(&mut config, &limiter).await.unwrap();
     println!("{:#?}", results);
     // get server status
-    let status = schemas::Agents::get_server_status(&mut config).await.unwrap();
-    println!("{:#?}", status);
+    // let status = schemas::Agents::get_server_status(&mut config).await.unwrap();
+    // println!("{:#?}", status);
 
     Ok(())
 }
