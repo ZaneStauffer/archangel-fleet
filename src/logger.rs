@@ -6,12 +6,15 @@
     use time::macros::{date, datetime};
     use colored::*;
     use std::result::Result;
+    use std::error;
 
     #[derive(Debug)]
     pub enum Error{
         LoggingError,
         APIError
     }
+
+    
 
     pub enum AlertType{
         DEFAULT,

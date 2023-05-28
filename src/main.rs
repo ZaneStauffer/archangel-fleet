@@ -6,6 +6,7 @@ use struct_db::*;
 use colored::*;
 
 use entities::schemas;
+use entities::schemas::Data;
 use database::db;
 
 mod generators;
@@ -41,13 +42,26 @@ async fn main() -> Result<()>{
         symbol: user_agent.clone(),
         token: "idk".to_string()
     };
-    let res = agent.register(&mut config, Faction::Quantum, user_agent.clone(), &lattice).await;
-    println!("{:#?}", res);
 
-    logger::log(&format!("{} has been instantiated. Storing agent signature in LATTICE.", user_agent),
-        logger::AlertType::ALERT,
-        true
-    );
+    // get bearer token
+    let token = db::read::<schemas::Agents>(&lattice, "VIRTUE-C8DB26".to_string()).token;
+    println!("{:#?}", token);
+    config.bearer_access_token = Some(token.clone());
+
+    let mut search: schemas::Agents = schemas::Agents::new("VIRTUE-C8DB26".to_string(), "".to_string());
+    let results = search.get_data::<schemas::Agents, Error>(&mut config, &lattice).await;
+
+    println!("{:?}", results.unwrap());
+
+    //let results = search.get_data(config, lattice).await;
+
+    // let res = agent.register(&mut config, Faction::Quantum, user_agent.clone(), &lattice).await;
+    // println!("{:#?}", res);
+
+    // logger::log(&format!("{} has been instantiated. Storing agent signature in LATTICE.", user_agent),
+    //     logger::AlertType::ALERT,
+    //     true
+    // );
     // register agent
     /*
     let register_response = register(&config, Some(register_request)).await;

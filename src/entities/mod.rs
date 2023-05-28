@@ -37,6 +37,13 @@ pub mod schemas{
         pub token: String
     }
     impl Agents {
+        // instantiates agent
+        pub fn new(sym: String, token: String) -> Agents{
+            Agents{
+                symbol: sym,
+                token: token
+            }
+        }
         // Converts primary key
         pub fn p_key(&self) -> Vec<u8>{
             self.symbol.as_bytes().to_vec()
@@ -64,6 +71,7 @@ pub mod schemas{
             }
         }
     }
+
     #[async_trait]
     impl Data for Agents {
         async fn get_data<R: 'static + Send, E: 'static + std::error::Error>(
