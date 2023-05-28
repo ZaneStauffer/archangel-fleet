@@ -50,8 +50,11 @@ async fn main() -> Result<()>{
     // Create search object
     let search = Agents::new("VIRTUE-C8DB26".to_string(), "".to_string());
     // get data
-    let results = search.get_data(&mut config, &limiter).await.unwrap();
-    println!("{:#?}", results);
+    // test rate limit by sending a lot of data
+    // for count in 0..100{
+    //     let results = search.get_data(&mut config, &limiter).await.unwrap();
+    //     println!("{}: {:#?}",count, results);
+    // }
     // get server status
     // let status = schemas::Agents::get_server_status(&mut config).await.unwrap();
     // println!("{:#?}", status);

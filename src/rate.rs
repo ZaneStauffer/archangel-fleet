@@ -46,7 +46,7 @@ impl RateLimiter{
 */
 // called in main to initialize rate limiter for whole program to send requests through
 pub fn init_rate_limiter(config: &Configuration) -> RateLimiter{
-    let mut bucket = RateLimiter::new_bucket(5, 1, 3);
+    let mut bucket = RateLimiter::new_bucket(2, 1, 2);
     RateLimiter{
         bucket: bucket
     }
