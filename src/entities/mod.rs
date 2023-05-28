@@ -7,6 +7,8 @@ pub mod schemas{
     use spacedust::apis::default_api::register;
     use spacedust::models::register_request::{Faction, RegisterRequest};
     use spacedust::models::register_201_response::Register201Response;
+    use spacedust::models::get_status_200_response::GetStatus200Response;
+    use spacedust::apis::default_api::GetStatusError;
     use serde::{Deserialize, Serialize};
     use struct_db::*;
     use std::any::Any;
@@ -17,14 +19,6 @@ pub mod schemas{
     use crate::db;
 
     use crate::logger::Error;
-
-    #[async_trait]
-    pub trait Data{
-        async fn get_data<R: 'static + Send, E: 'static + std::error::Error>(&self,
-            config: &mut Configuration,
-            tables: &Db
-        ) -> Result<Box<dyn Any + Send>, E>;
-    }
 
     #[derive(Serialize, Deserialize, PartialEq, Debug)]
     #[struct_db(
@@ -70,17 +64,28 @@ pub mod schemas{
                 }
             }
         }
+        /*
+        Agent {
+            account_id: "cli6nh1cu4pios60d4hvxfrqp",
+            symbol: "VIRTUE-C8DB26",
+            headquarters: "X1-NU19-03110X",
+            credits: 100000,
+            starting_faction: "QUANTUM",
+        }
+        */
+        // Gets agent data from API
+        pub async fn get_data(&self, config: &mut Configuration) -> Result<Agent, GetMyAgentError> {
+            let response = get_my_agent(config).await.unwrap();
+            Ok(*response.data)
+        }
+        
+        pub async fn get_server_status(config: &mut Configuration) -> Result<GetStatus200Response, GetStatusError>{
+            let response = spacedust::apis::default_api::get_status(&config).await.unwrap();
+            Ok(response)
+        }
+        
+
     }
 
-    #[async_trait]
-    impl Data for Agents {
-        async fn get_data<R: 'static + Send, E: 'static + std::error::Error>(
-            &self,
-            config: &mut Configuration,
-            tables: &Db)  -> Result<Box<dyn Any + Send>, E> {
-                let get = get_my_agent(config).await;
-                Ok(Box::new(get.unwrap().data) as Box<dyn Any + Send>)
-            }
-    }
-
+    
 }

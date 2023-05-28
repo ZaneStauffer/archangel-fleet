@@ -6,7 +6,6 @@ use struct_db::*;
 use colored::*;
 
 use entities::schemas;
-use entities::schemas::Data;
 use database::db;
 
 mod generators;
@@ -47,35 +46,14 @@ async fn main() -> Result<()>{
     let token = db::read::<schemas::Agents>(&lattice, "VIRTUE-C8DB26".to_string()).token;
     println!("{:#?}", token);
     config.bearer_access_token = Some(token.clone());
-
-    let mut search: schemas::Agents = schemas::Agents::new("VIRTUE-C8DB26".to_string(), "".to_string());
-    let results = search.get_data::<schemas::Agents, Error>(&mut config, &lattice).await;
-
-    println!("{:?}", results.unwrap());
-
-    //let results = search.get_data(config, lattice).await;
-
-    // let res = agent.register(&mut config, Faction::Quantum, user_agent.clone(), &lattice).await;
-    // println!("{:#?}", res);
-
-    // logger::log(&format!("{} has been instantiated. Storing agent signature in LATTICE.", user_agent),
-    //     logger::AlertType::ALERT,
-    //     true
-    // );
-    // register agent
-    /*
-    let register_response = register(&config, Some(register_request)).await;
-    match register_response {
-        Ok(res) => {
-            println!("{:#?}", res);
-            // here: update JSON with symbol and token (and eventually user)
-            config.bearer_access_token = Some(res.data.token);
-        }
-        Err(e) => {
-            panic!("{:#?}", e);
-        }
-    }
-    */
+    // Create search object
+    let search = schemas::Agents::new("VIRTUE-C8DB26".to_string(), "".to_string());
+    // get data
+    let results = search.get_data(&mut config).await.unwrap();
+    println!("{:#?}", results);
+    // get server status
+    let status = schemas::Agents::get_server_status(&mut config).await.unwrap();
+    println!("{:#?}", status);
 
     Ok(())
 }
