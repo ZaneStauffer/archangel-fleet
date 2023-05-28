@@ -78,7 +78,21 @@ pub mod schemas{
             let response = get_my_agent(config).await.unwrap();
             Ok(*response.data)
         }
-        
+        /*
+        GetStatus200Response {
+            status: "SpaceTraders is currently online and available to play",
+            version: "v2",
+            reset_date: "2023-05-20",
+            description: "SpaceTraders is a headless API and fleet-management game where players can work together or against each other to trade, explore, expand, and conquer in a dynamic and growing universe. Build your own UI, write automated scripts, or just play the game from the comfort of your terminal. The game is currently in alpha and is under active development.",
+            stats: GetStatus200ResponseStats {
+                agents: 2621,
+                ships: 4359,
+                systems: 8999,
+                waypoints: 49978,
+            },
+            leaderboards: GetStatus200ResponseLeaderboards {
+                etc...
+        */
         pub async fn get_server_status(config: &mut Configuration) -> Result<GetStatus200Response, GetStatusError>{
             let response = spacedust::apis::default_api::get_status(&config).await.unwrap();
             Ok(response)
