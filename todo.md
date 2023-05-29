@@ -11,3 +11,4 @@ implement scripting language (look for a crate) to call from the SDK
     scripts all share the same rate limit bucket
 
 long haul: completely remove myself from any interaction with the game by training a reinforcement learning model to do it for me
+    could totally botnet this lul 1337

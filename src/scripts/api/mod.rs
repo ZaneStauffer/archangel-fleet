@@ -7,11 +7,11 @@ This module binds scripting functions to our API
 
 pub fn bind_functions(engine: &mut Engine) -> Result<(), Box<EvalAltResult>>{
     // list all functions to bind here
-    engine.register_fn("test", test_function);
-    
+    engine.register_fn("test", test);
+    // end list
     Ok(())
 }
 
-fn test_function(){
+fn test(){
     unimplemented!()
 }

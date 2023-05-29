@@ -44,7 +44,7 @@
         // i am an EVIL hacker....
             // they call me anonymous
                 // THE anon
-    pub fn log(message: &String, alert_type: AlertType, should_save: bool){
+    pub fn log(message: &str, alert_type: AlertType, should_save: bool){
         let input_char = "!>".white();
         // Log Format
         // [timestamp (alert)] !> message
@@ -57,7 +57,7 @@
         println!("{}", log);
     }
 
-    pub fn system_log(message: &String, should_save: bool){
+    pub fn system_log(message: &str, should_save: bool){
         let log = format!(">> {} <<", message.cyan());
         if should_save {
             // Appends this log to the logfile
