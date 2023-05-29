@@ -11,6 +11,7 @@ use crate::rate::RateLimiter;
 use crate::entities::schemas;
 use crate::entities::{agent::*, ship::*};
 use crate::database::db;
+use crate::generators;
 
 pub async fn run_tests(
     db: &mut Db,
@@ -20,6 +21,7 @@ pub async fn run_tests(
 ){
     // everytime we want to test, we write a test function and call it here with the dependencies we inject
     _rate_limit_test(config, limiter).await;
+    _get_bearer_token_test(db, config, limiter).await;
 }
 // for future tests please use assert!() and assert_eq!() macros to test the results of the function
 
@@ -30,4 +32,12 @@ async fn _rate_limit_test(config: &mut Configuration, limiter: &mut RateLimiter)
         let results = search.get_data(config, limiter).await.unwrap();
         println!("{}: {:#?}",count, results);
     }
+}
+
+async fn _get_bearer_token_test(db: &Db, config: &mut Configuration, limiter: &mut RateLimiter){
+    // register request [testing]
+    let id: String = generators::generate_hex_ID();
+    let user_agent = format!("VIRTUE-{}", id); // agent name with ARCHANGEL + id
+
+    
 }
