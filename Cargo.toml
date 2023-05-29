@@ -17,3 +17,4 @@ time = { version = "0.3.21", features = ["macros"] }
 async-trait = "0.1.68"
 leaky-bucket-lite = "0.5.2"
 futures = "0.3.28"
+rhai = "1.14.0"

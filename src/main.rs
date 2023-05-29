@@ -15,10 +15,14 @@ mod database;
 mod logger;
 mod entities;
 mod rate;
+mod scripts;
 
 #[tokio::main]
 async fn main() -> Result<()>{
     let mut lattice = db::init_db("lattice")?;
+    //let mut engine = Engine::new(); // create rhai scripting engine
+    // TODO: do RHAI bindings here
+    //let result = engine.eval_file::<i64>("scripts/test.rhai".into()).unwrap();
     
     println!(">> {} <<", "BOOTING NEUROMORPHIC CORE".white());
     println!("> Instantiating SERAPH translation angel...");
