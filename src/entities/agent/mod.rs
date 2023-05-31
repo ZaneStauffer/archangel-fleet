@@ -11,6 +11,8 @@ use serde::{Deserialize, Serialize};
 use struct_db::*;
 use std::result::Result;
 use leaky_bucket_lite::LeakyBucket;
+use std::sync::Arc;
+use futures::executor::block_on;
 
 use crate::db;
 use crate::rate;
@@ -42,10 +44,10 @@ use crate::rate;
         // In the bucket we should have the function return a promise for THIS function to handle. The promise
         // should be a promise to return a Register201Response. The bucket should be a singleton.
         // bucket has max 5 tokens. 3 tokens refill per second. 1 token per request.
-        pub async fn register(&self, config: &mut Configuration, limiter: &rate::RateLimiter,
+        pub async fn register(&mut self, config: &mut Configuration, limiter: &mut rate::RateLimiter,
             faction: Faction,
             symbol: String,
-            tables: &Db) -> Register201Response
+            tables: &mut Db) -> Register201Response
         {
             let register_request = RegisterRequest::new(faction, symbol.clone());
             limiter.bucket.acquire_one().await;
@@ -78,12 +80,12 @@ use crate::rate;
         }
         */
         // Gets agent data from API
-        pub async fn get_data(&self, config: &mut Configuration, limiter: &rate::RateLimiter) -> Result<Agent, GetMyAgentError> {
+        pub fn get_data(&self, config: &Configuration, limiter: &rate::RateLimiter) -> Agent {
             // acquire token from bucket
-            limiter.bucket.acquire_one().await;
-            let response = get_my_agent(config).await.unwrap();
-            println!("Token found!");
-            Ok(*response.data)
+            block_on(limiter.bucket.acquire_one());
+            let response = block_on(get_my_agent(config)).unwrap();
+            let unwrapped = *response.data;
+            unwrapped
         }
         /*
         GetStatus200Response {
@@ -105,6 +107,13 @@ use crate::rate;
             let response = spacedust::apis::default_api::get_status(&config).await.unwrap();
             Ok(response)
         }
-        
+    }
 
+    impl Clone for Agents{
+        fn clone(&self) -> Self{
+            Agents{
+                symbol: self.symbol.clone(),
+                token: self.token.clone()
+            }
+        }
     }

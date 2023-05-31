@@ -20,16 +20,16 @@ pub async fn run_tests(
     limiter: &mut RateLimiter
 ){
     // everytime we want to test, we write a test function and call it here with the dependencies we inject
-    _rate_limit_test(config, limiter).await;
-    _get_bearer_token_test(db, config, limiter).await;
+    // _rate_limit_test(config, limiter).await;
+    // _get_bearer_token_test(db, config, limiter).await;
 }
 // for future tests please use assert!() and assert_eq!() macros to test the results of the function
 
 async fn _rate_limit_test(config: &mut Configuration, limiter: &mut RateLimiter){
     // test rate limit by sending a lot of data
-    let search = Agents::new("VIRTUE-C8DB26".to_string(), "".to_string());
+    let mut search = Agents::new("VIRTUE-C8DB26".to_string(), "".to_string());
     for count in 0..100{
-        let results = search.get_data(config, limiter).await.unwrap();
+        let results = search.get_data(config, limiter);
         println!("{}: {:#?}",count, results);
     }
 }

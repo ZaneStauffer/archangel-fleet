@@ -5,6 +5,7 @@ use spacedust::models::register_request::{Faction, RegisterRequest};
 use struct_db::*;
 use colored::*;
 use std::env;
+use std::path::{Path, PathBuf};
 use rhai::{Engine, EvalAltResult, AST};
 
 use entities::schemas;
@@ -23,28 +24,40 @@ mod tests;
 #[tokio::main]
 async fn main() -> Result<()>{
     // Dependencies for the program to inject into module functions
+    logger::log("Initializing dependencies...", logger::AlertType::DEFAULT, false);
     let mut lattice = db::init_db("lattice")?; // database
     let mut engine = scripts::init_engine().unwrap(); // script engine
     let mut config = Configuration::new(); // config for spacedust api
     let mut limiter = rate::init_rate_limiter(&config); // rate limiter
 
     boot_log();
+
     let agent = "VIRTUE-C8DB26"; // TODO: agent token switching
     set_token(&lattice, &mut config, agent); // Sets the agent auth token for spacedust api
-    handle_scripts(&engine);
 
+    logger::log("I am now running your test functions...", logger::AlertType::DEFAULT, false);
     tests::run_tests(&mut lattice, &mut engine, &mut config, &mut limiter).await;
+
+    logger::log("Now executing scripts...", logger::AlertType::DEFAULT, false);
+    handle_scripts(&engine);
 
     Ok(())
 }
 
+// TODO: file parameter
 fn handle_scripts(engine: &Engine){
+// cargo run -- ./scripts/test.rhai
     let args: Vec<_> = env::args().collect();
-    let script_path = args[1].clone(); // this is the file path of the script to read
     if args.len() > 1{
-        
+        let script_path = args[1].clone(); // this is the file path of the script to read
+        let arg_script = scripts::read_script(engine, script_path.clone()).unwrap();
+        logger::log(format!("Executing script: {}", script_path.clone()).as_str(), logger::AlertType::DEFAULT, true);
+        // make this async? 
+        let mut result = scripts::execute(engine, arg_script).unwrap();
+        logger::log(format!("Script result: {}", result).as_str(), logger::AlertType::DEFAULT, true);
     }else{
         // FIXME: no args, what do we do? 
+        logger::log("No script path provided. Please provide a script path as an argument to the program.", logger::AlertType::ALERT, false);
     }
 }
 
