@@ -16,8 +16,8 @@ use crate::generators;
 pub async fn run_tests(
     db: &mut Db,
     engine: &mut Engine,
-    config: &mut Configuration,
-    limiter: &mut RateLimiter
+    config: &Configuration,
+    limiter: &RateLimiter
 ){
     // everytime we want to test, we write a test function and call it here with the dependencies we inject
     // _rate_limit_test(config, limiter).await;
@@ -27,7 +27,7 @@ pub async fn run_tests(
 
 async fn _rate_limit_test(config: &mut Configuration, limiter: &mut RateLimiter){
     // test rate limit by sending a lot of data
-    let mut search = Agents::new("VIRTUE-C8DB26".to_string(), "".to_string());
+    let mut search = Agents::new("VIRTUE-C8DB26".to_string(), "cosmic");
     for count in 0..100{
         let results = search.get_data(config, limiter);
         println!("{}: {:#?}",count, results);

@@ -7,11 +7,14 @@ use colored::*;
 use std::env;
 use std::path::{Path, PathBuf};
 use rhai::{Engine, EvalAltResult, AST};
+use lazy_static::lazy_static;
 
 use entities::schemas;
 // import all entity schema
 use entities::{agent::*, ship::*};
 use database::db;
+
+use crate::rate::RateLimiter;
 
 mod generators;
 mod database;
@@ -21,26 +24,60 @@ mod rate;
 mod scripts;
 mod tests;
 
+pub mod statics{
+    use lazy_static::lazy_static;
+    use spacedust::apis::configuration::Configuration;
+    use crate::rate;
+    use crate::database::db;
+    use struct_db::*;
+
+    /*
+    JOHN 1:9
+    If we confess our sins, he is faithful and just to forgive us our sins, and to cleanse us from all unrighteousness.
+    */
+    lazy_static!{
+        pub static ref Lattice: Db = {
+            db::init_db("lattice").unwrap()
+        };
+        pub static ref Config: Configuration = {
+            use crate::database::db;
+            use crate::entities::{agent::Agents};
+
+            let mut _config = Configuration::new();
+
+            let agent_symbol: String = "VIRTUE-C8DB26".to_string();
+            let token = db::read::<Agents>(&Lattice, agent_symbol).token;
+            _config.bearer_access_token = token.clone();
+            _config
+            // set token
+            // let token = db::read::<Agents>(&db, agent_symbol.to_string()).token;
+        };
+        pub static ref Limiter: rate::RateLimiter = rate::init_rate_limiter(&Config);
+    }
+}
+
 #[tokio::main]
 async fn main() -> Result<()>{
     // Dependencies for the program to inject into module functions
     logger::log("Initializing dependencies...", logger::AlertType::DEFAULT, false);
     let mut lattice = db::init_db("lattice")?; // database
     let mut engine = scripts::init_engine().unwrap(); // script engine
-    let mut config = Configuration::new(); // config for spacedust api
-    let mut limiter = rate::init_rate_limiter(&config); // rate limiter
+    //let mut config = Configuration::new(); // config for spacedust apiate limiter
+
+    // use statics for the config and limiter
+    // global variables are bad but this is the only way to do it i think for now
 
     boot_log();
 
     let agent = "VIRTUE-C8DB26"; // TODO: agent token switching
-    set_token(&lattice, &mut config, agent); // Sets the agent auth token for spacedust api
-
+   
+    //set_token(&lattice, &statics::config, agent); // Sets the agent auth token for spacedust api
     logger::log("I am now running your test functions...", logger::AlertType::DEFAULT, false);
-    tests::run_tests(&mut lattice, &mut engine, &mut config, &mut limiter).await;
+    tests::run_tests(&mut lattice, &mut engine, &statics::Config, &statics::Limiter).await;
 
     logger::log("Now executing scripts...", logger::AlertType::DEFAULT, false);
     handle_scripts(&engine);
-
+    
     Ok(())
 }
 
@@ -69,8 +106,8 @@ fn boot_log(){
     logger::log("ARCHANGEL.RAZIEL is ONLINE. Greetings, user. I will now run some post-boot protocols.", logger::AlertType::DEFAULT, true);
 }
 
-fn set_token(db: &Db, config: &mut Configuration, agent_symbol: &str){
-    // get bearer token
-    let token = db::read::<Agents>(&db, agent_symbol.to_string()).token;
-    config.bearer_access_token = Some(token.clone());
-}
+// fn set_token(db: &Db, config: &Configuration, agent_symbol: &str){
+//     // get bearer token
+//     let token = db::read::<Agents>(&db, agent_symbol.to_string()).token;
+//     config.bearer_access_token = token.clone();
+// }

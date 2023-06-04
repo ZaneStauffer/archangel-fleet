@@ -29,6 +29,7 @@ dependencies = [
  "async-trait",
  "colored",
  "futures",
+ "lazy_static",
  "leaky-bucket-lite",
  "rand",
  "rhai",

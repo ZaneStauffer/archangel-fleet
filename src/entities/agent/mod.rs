@@ -25,14 +25,24 @@ use crate::rate;
     )]
     pub struct Agents{
         pub symbol: String,
-        pub token: String
+        pub token: Option<String>,
+        pub headquarters: Option<String>,
+        pub credits: i32, // should start at 10000 credits
+        pub starting_faction: String,
+        pub account_id: Option<String>
+        // pub rate limiter
+        // pub config
     }
     impl Agents {
         // instantiates agent
-        pub fn new(sym: String, token: String) -> Agents{
+        pub fn new(sym: String, faction: &str) -> Agents{
             Agents{
                 symbol: sym,
-                token: token
+                token: None,
+                headquarters: None, // set at registration
+                credits: 10000,
+                starting_faction: faction.to_string(),
+                account_id: None // set at registration
             }
         }
         // Converts primary key
@@ -40,10 +50,6 @@ use crate::rate;
             self.symbol.as_bytes().to_vec()
         }
         // Attempts to register a new agent with the API
-        // TODO: Buffer requests with the leaky bucket module to prevent rate limiting
-        // In the bucket we should have the function return a promise for THIS function to handle. The promise
-        // should be a promise to return a Register201Response. The bucket should be a singleton.
-        // bucket has max 5 tokens. 3 tokens refill per second. 1 token per request.
         pub async fn register(&mut self, config: &mut Configuration, limiter: &mut rate::RateLimiter,
             faction: Faction,
             symbol: String,
@@ -58,7 +64,11 @@ use crate::rate;
                     // update DB here
                     db::insert(tables, Agents{
                         symbol: symbol,
-                        token: res.data.token.clone()
+                        token: Some(res.data.token.clone()),
+                        headquarters: Some(res.data.agent.headquarters.clone()),
+                        credits: res.data.agent.credits,
+                        account_id: Some(res.data.agent.account_id.clone()),
+                        starting_faction: res.data.agent.starting_faction.clone()
                     }).unwrap();
                     // Change access token for API (TODO: handle multiple tokens)
                     config.bearer_access_token = Some(res.data.token.clone());
@@ -113,7 +123,11 @@ use crate::rate;
         fn clone(&self) -> Self{
             Agents{
                 symbol: self.symbol.clone(),
-                token: self.token.clone()
+                token: self.token.clone(),
+                headquarters: self.headquarters.clone(),
+                credits: self.credits.clone(),
+                starting_faction: self.starting_faction.clone(),
+                account_id: self.account_id.clone()
             }
         }
     }
