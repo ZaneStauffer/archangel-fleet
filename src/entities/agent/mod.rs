@@ -78,7 +78,7 @@ use crate::logger;
                 Some(_) => {
 
                 },
-                // if we don't have a faction (like if), we need to make a request to Space Traders API
+                // if we don't have a faction, we need to make a request to Space Traders API
                 None => {
                     let _faction_res = get_faction(
                         config,

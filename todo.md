@@ -1,3 +1,6 @@
+more complete error handling and propagation
+list database tables
+
 ~~uhhh buckets~~
 handle using different agent tokens for requests
 make use of burst requests
