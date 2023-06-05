@@ -11,7 +11,7 @@
     #[derive(Debug)]
     pub enum Error{
         LoggingError,
-        APIError
+        APIError(String)
     }
 
     

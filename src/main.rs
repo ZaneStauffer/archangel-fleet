@@ -8,6 +8,7 @@ use std::env;
 use std::path::{Path, PathBuf};
 use rhai::{Engine, EvalAltResult, AST};
 use lazy_static::lazy_static;
+use std::sync::Mutex;
 
 use entities::schemas;
 // import all entity schema
@@ -30,6 +31,7 @@ pub mod statics{
     use crate::rate;
     use crate::database::db;
     use struct_db::*;
+    use std::sync::Mutex;
 
     /*
     JOHN 1:9
@@ -37,18 +39,24 @@ pub mod statics{
     */
     lazy_static!{
         pub static ref Lattice: Db = {
-            db::init_db("lattice").unwrap()
+            db::init_db("data").unwrap()
         };
-        pub static ref Config: Configuration = {
+        pub static ref Config: Mutex<Configuration> = {
             use crate::database::db;
             use crate::entities::{agent::Agents};
 
             let mut _config = Configuration::new();
-
+            /*
             let agent_symbol: String = "VIRTUE-C8DB26".to_string();
+            println!("now reading token for agent: {}", agent_symbol.clone());
+            // vvvvvvvvvvvvvvvvvvvvvvvvv FIXME:
             let token = db::read::<Agents>(&Lattice, agent_symbol).token;
-            _config.bearer_access_token = token.clone();
-            _config
+            // ^^^^^^^^^^^^^^^^^^^^^^^^^
+            println!("token: {}", token.clone());
+            */
+            let _test_token = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZGVudGlmaWVyIjoiQU5HRUwtMDEiLCJ2ZXJzaW9uIjoidjIiLCJyZXNldF9kYXRlIjoiMjAyMy0wNi0wMyIsImlhdCI6MTY4NTkxODc0NSwic3ViIjoiYWdlbnQtdG9rZW4ifQ.yjlS9DEWZ9AJaqO0tyjt-kJjz2RB-m85LIf28WdhIeJp4jU4ynjKu-3StgCA6kLgbDOevRR_xS_TXZ75Z97B6EVrWd4vrXb9ci_Zpm8LbdOC6Yk_Aewxh8WYnc4XaJvv1psdcmGmLyQH8fHl1fjumGVlOM3GVf4M5lKzT4SlX4TAVVzs7F_vFpbfHZlGewKiRdOmxhlzuJoMRk4pODDxKpL7a0UzOdr8rq4hNjRTjOLZWrQQw_2daCE6eWGNaOPmX0RE4aoLShP4YO4k_G4rB6GcYYzJgtJydnQ5zbEZC7t017lLGRdqwgtMADqIUKfiu0zZC8J7RMIQy9kAgVbj7g";
+            _config.bearer_access_token = Some(_test_token.to_string().clone());
+            Mutex::new(_config)
             // set token
             // let token = db::read::<Agents>(&db, agent_symbol.to_string()).token;
         };
@@ -58,25 +66,23 @@ pub mod statics{
 
 #[tokio::main]
 async fn main() -> Result<()>{
-    // Dependencies for the program to inject into module functions
-    logger::log("Initializing dependencies...", logger::AlertType::DEFAULT, false);
-    let mut lattice = db::init_db("lattice")?; // database
     let mut engine = scripts::init_engine().unwrap(); // script engine
-    //let mut config = Configuration::new(); // config for spacedust apiate limiter
-
-    // use statics for the config and limiter
-    // global variables are bad but this is the only way to do it i think for now
 
     boot_log();
 
     let agent = "VIRTUE-C8DB26"; // TODO: agent token switching
    
-    //set_token(&lattice, &statics::config, agent); // Sets the agent auth token for spacedust api
+    
     logger::log("I am now running your test functions...", logger::AlertType::DEFAULT, false);
-    tests::run_tests(&mut lattice, &mut engine, &statics::Config, &statics::Limiter).await;
+    tests::run_tests(
+        &statics::Lattice,
+        &mut engine,
+        &mut statics::Config.lock().unwrap(),
+        &statics::Limiter
+    ).await;
 
-    logger::log("Now executing scripts...", logger::AlertType::DEFAULT, false);
-    handle_scripts(&engine);
+    // logger::log("Now executing scripts...", logger::AlertType::DEFAULT, false);
+    // handle_scripts(&engine);
     
     Ok(())
 }

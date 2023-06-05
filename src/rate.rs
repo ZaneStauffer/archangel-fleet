@@ -9,6 +9,7 @@ use leaky_bucket_lite::LeakyBucket;
 use std::time::Duration;
 use std::future::Future;
 use futures::executor::block_on;
+use crate::statics::*;
 
 // singleton rate limiter for whole program to send requests through (initialized in main)
 pub struct RateLimiter{
@@ -45,7 +46,7 @@ impl RateLimiter{
     * @return LeakyBucket - The rate limiter
 */
 // called in main to initialize rate limiter for whole program to send requests through
-pub fn init_rate_limiter(config: &Configuration) -> RateLimiter{
+pub fn init_rate_limiter(config: &Config) -> RateLimiter{
     let mut bucket = RateLimiter::new_bucket(2, 1, 2);
     RateLimiter{
         bucket: bucket
