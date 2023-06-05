@@ -15,7 +15,7 @@ pub fn bind_functions(engine: &mut Engine) -> Result<(), Box<EvalAltResult>>{
 }
 // TODO:
 fn register_agent() -> Result<(), Box<EvalAltResult>>{
-    Ok(())
+    todo!("register_agent function not implemented")
 }
 
 // how should the function look in the scripting language?

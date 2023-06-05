@@ -1,5 +1,5 @@
-more complete error handling and propagation
-list database tables
+more complete error handling and propagation from script to call
+TODO: list database stats when db is initialized
 
 ~~uhhh buckets~~
 handle using different agent tokens for requests

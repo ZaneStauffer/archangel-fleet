@@ -1,21 +1,8 @@
-use spacedust::apis::agents_api::get_my_agent;
-use spacedust::apis::configuration::Configuration;
-use spacedust::apis::default_api::register;
-use spacedust::models::register_request::{Faction, RegisterRequest};
 use struct_db::*;
 use colored::*;
 use std::env;
-use std::path::{Path, PathBuf};
-use rhai::{Engine, EvalAltResult, AST};
-use lazy_static::lazy_static;
-use std::sync::Mutex;
-
-use entities::schemas;
-// import all entity schema
-use entities::{agent::*, ship::*};
+use rhai::{Engine};
 use database::db;
-
-use crate::rate::RateLimiter;
 
 mod generators;
 mod database;
@@ -24,6 +11,8 @@ mod entities;
 mod rate;
 mod scripts;
 mod tests;
+
+#[allow(non_upper_case_globals)]
 
 pub mod statics{
     use lazy_static::lazy_static;
@@ -42,9 +31,6 @@ pub mod statics{
             db::init_db("data").unwrap()
         };
         pub static ref Config: Mutex<Configuration> = {
-            use crate::database::db;
-            use crate::entities::{agent::Agents};
-
             let mut _config = Configuration::new();
             /*
             let agent_symbol: String = "VIRTUE-C8DB26".to_string();

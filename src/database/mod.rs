@@ -1,12 +1,4 @@
-
-
 pub mod db{
-
-    use serde::{Deserialize, Serialize};
-    use std::fs::File;
-    use std::io::Read;
-    use std::fmt;
-    use std::result;
     use std::path;
     use struct_db::*;
     use crate::entities::{agent::*, ship::*};
@@ -15,8 +7,7 @@ pub mod db{
     // Update the database
     pub fn update<T>(db: &Db, datum: T) -> std::result::Result<(), Box<dyn std::error::Error>>{
         // update calls
-            
-        Ok(())
+        unimplemented!("update function not implemented")
     }
 
     pub fn insert<T: SDBItem>(db: &Db, datum: T) -> std::result::Result<(), Box<dyn std::error::Error>>{

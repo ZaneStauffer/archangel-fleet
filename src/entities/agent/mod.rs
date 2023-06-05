@@ -12,8 +12,6 @@ use spacedust::apis::default_api::GetStatusError;
 use serde::{Deserialize, Serialize};
 use struct_db::*;
 use std::result::Result;
-use leaky_bucket_lite::LeakyBucket;
-use std::sync::Arc;
 use futures::executor::block_on;
 
 use crate::db;

@@ -2,13 +2,8 @@
 // The rate limiter is used to limit the number of requests per second to the SpaceTraders API.
 // Compare this snippet from src\entities\schemas.rs:
 
-use spacedust::apis::configuration::Configuration;
-use spacedust::apis::*;
-use spacedust::models::*;
 use leaky_bucket_lite::LeakyBucket;
 use std::time::Duration;
-use std::future::Future;
-use futures::executor::block_on;
 use crate::statics::*;
 
 // singleton rate limiter for whole program to send requests through (initialized in main)
